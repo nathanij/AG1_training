@@ -14,11 +14,11 @@ class PolicyNetwork:
 
     def eval(self, state: BoardState) -> List[Tuple[float, int]]:
         position = state.get_state_array()
-        # policy = self.network_.eval(np.array(position))
-        # start as random
-        pairings = [(random.random(), i) for i in range(362)]
-        # pairings = []
-        #for move, strength in enumerate(policy):
-            #pairings.append((strength, move))
+        position.reshape(-1,19,19,1)
+        policy = self.model_.predict(position) # TODO: check if this needs to be indexed into
+        pairings = []
+        for move, strength in enumerate(policy):
+            if (move // 19 < 9 and move % 19 < 9) or move == 361: # Filter moves early
+                pairings.append((strength, move))
         pairings.sort(key = lambda x: (x[0], -x[1]), reverse = True)  # Descending strength, ascending move order
         return pairings

@@ -13,6 +13,5 @@ class ValueNetwork:
 
     def eval(self, state: BoardState) -> float:
         position = state.get_state_array()
-        position.reshape(-1,19,19,1)
         return self.model_.predict(position)[0][0]
     

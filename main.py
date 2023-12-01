@@ -18,11 +18,11 @@ value_tag_arrays = []   # game result
 policy_tag_arrays = []  # Normalized MCTS visit counts
 
 exploration_factor = math.sqrt(2) / 8  # from paper
+board_size = 9
 search_limit = 10  # starting very low to test
-expansion_limit = 10  # up to how many legal moves generated during MCTS, can decrease as policy network strength increases (using 2 for testing)
-sim_driver = SimDriver(policy_network_path, value_network_path, 
+expansion_limit = 41  # up to how many legal moves generated during MCTS, can decrease as policy network strength increases (using 2 for testing)
+sim_driver = SimDriver(policy_network_path, value_network_path, board_size
                        exploration_factor, search_limit, expansion_limit)
-start_time = time.time()
 sim_length = 1  # TODO: change to much larger once tested
 for _ in range(sim_length):
     sim_driver.simulate()
@@ -32,6 +32,7 @@ for _ in range(sim_length):
 input_data = np.concatenate(input_arrays).astype('float32') # I think concatenate is right, we can check dimensions when we get here
 value_tags = np.concatenate(value_tag_arrays).astype('float32')
 policy_tags = np.concatenate(policy_tag_arrays).astype('float32')
+input()
 # TODO: adjust pathing on ECE machine
 save_dir = os.path.join(base_path, 'data/mcts_data')
 save_path = os.path.join(save_dir, f'training_data_{run_iter}.h5')

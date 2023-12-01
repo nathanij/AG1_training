@@ -11,11 +11,12 @@ from mcts.search_node import SearchNode
 
 class SimDriver:
     def __init__(self, policy_network_path: str, value_network_path: str,
-                 exploration_factor: int, search_limit: int,
+                 board_size: int, exploration_factor: int, search_limit: int,
                  expansion_limit: int):
         self.policy_network_ = PolicyNetwork(policy_network_path)
         self.value_network_ = ValueNetwork(value_network_path)
-        self.root_ = SearchNode(None, BoardState(), 0)
+        self.board_size_ = board_size
+        self.root_ = SearchNode(None, BoardState(board_size), 0)
         self.exploration_factor_ = exploration_factor
         self.search_limit_ = search_limit
         self.expansion_limit_ = expansion_limit
@@ -23,7 +24,7 @@ class SimDriver:
         self.visit_counts_ = []
 
     def reset(self):
-        new_state = BoardState()
+        new_state = BoardState(self.board_size_)
         self.root_ = SearchNode(None, new_state, 0)
         self.training_states_ = []
         self.visit_counts_ = []
@@ -50,12 +51,13 @@ class SimDriver:
         turn = 0
         start_time = time.time()
         while not self.root_.finished():
-            pre_state = self.root_.get_state_array()
+            pre_state = self.root_.get_state_array()  # TODO: change this to pad the 9x9
             # active_player = self.root_.get_active_player()
             # pre_state.append(active_player)
             self.training_states_.append(pre_state)
             search_driver = SearchDriver(self.policy_network_,
-                                         self.value_network_, self.root_,
+                                         self.value_network_, 
+                                         self.board_size_, self.root_,
                                          self.exploration_factor_,
                                          self.search_limit_,
                                          self.expansion_limit_)
@@ -63,10 +65,10 @@ class SimDriver:
             while not search_driver.finished():
                 search_driver.expand()
             move = search_driver.most_visited()
-            self.visit_counts_.append(search_driver.normalized_visit_count())
+            self.visit_counts_.append(search_driver.normalized_visit_count())  # TODO: pad this to 19x19 as well
             self.root_ = self.root_.new_root_from(move)
-            # for row in self.root_.state_.board_:
-            #     print(row)
+            for row in self.root_.state_.board_:
+                print(row)
             print(f'Eval after move {turn}: {self.root_.value_}')
             turn += 1
         print(f'Average time per move: {(time.time() - start_time) / turn} seconds')

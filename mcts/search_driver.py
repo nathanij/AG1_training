@@ -11,11 +11,13 @@ class SearchDriver:
     # This will train the engine not to make them either (as training policy 
     # vector will not include any)
     def __init__(self, policy_network: PolicyNetwork, 
-                 value_network: ValueNetwork, root: SearchNode,
+                 value_network: ValueNetwork, 
+                 board_size: int, root: SearchNode,
                  exploration_factor: int, search_limit: int,
                  expansion_limit: int):
         self.policy_network_ = policy_network
         self.value_network_ = value_network
+        self.board_size_ = board_size
         self.root_ = root
         self.exploration_factor_ = exploration_factor
         self.iterations_ = 0
@@ -32,12 +34,12 @@ class SearchDriver:
         return scalar * visit_score
     
     def explore(self, cur: SearchNode) -> List[Tuple[float, int, SearchNode]]:
-        move_strengths = self.policy_network_.eval(cur)
+        move_strengths = self.policy_network_.eval(cur)  # TODO: 9x9 plz and thanks
         i = 0
         candidates = []
         while i < len(move_strengths) and len(candidates) < self.expansion_limit_:
             move = move_strengths[i][1]
-            result = cur.state().next_move(move)
+            result = cur.state().next_move(move) # TODO: recalc columns and rows inside this for 9x9
             if result is not None:
                 candidates.append((move_strengths[i][0], move, result))
             i += 1
@@ -101,11 +103,17 @@ class SearchDriver:
     
     def normalized_visit_count(self) -> List[float]:
         visits = 0
-        target = [0] * 362
+        target = [0] * 362  # This should be fine to remain
         for move in self.root_.branches():
             child = self.root_.child_at(move)
-            target[move] = child.visits()
+            target[self.convert_move_num(move, 9, 19)] = child.visits()
             visits += child.visits()
         for i in range(len(target)):
             target[i] /= visits
         return target
+    
+    def convert_move_num(move: int, prev: int, new: int) -> int:
+        old_row = move // prev
+        old_col = move % prev
+        return old_row * new + old_col
+

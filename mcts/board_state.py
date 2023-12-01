@@ -15,7 +15,7 @@ class BoardState:
             self.score_ = deepcopy(prev.score_)
             
         else:
-            row, col = random.randint(0, 18), random.randint(0, 18)
+            row, col = random.randint(0, self.size_ - 1), random.randint(0, self.size_ - 1)
             # TODO: randomize multiple moves after testing (first 4 moves)
             self.board_ = [[0.5] * size for _ in range(size)] # 0 for black, 1 for white
             self.board_[row][col] = 0  # randomized first move
